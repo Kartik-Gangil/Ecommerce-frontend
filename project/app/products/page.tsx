@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
+import Loader from '@/components/loader'
 
 export default function ProductsPage() {
   interface product {
@@ -17,6 +18,7 @@ export default function ProductsPage() {
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [products, SetProduct] = useState<product[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
 
 
   useEffect(() => {
@@ -24,6 +26,7 @@ export default function ProductsPage() {
   }, [])
 
   const fetchProduct = async () => {
+    setLoading(true)
     try {
       const response = await axios.get('http://localhost:3334/product/')
       if (response) {
@@ -41,6 +44,9 @@ export default function ProductsPage() {
       }
     } catch (e) {
       return e
+    }
+    finally {
+      setLoading(false)
     }
   }
 
@@ -63,7 +69,7 @@ export default function ProductsPage() {
         }
       );
 
-    
+
     } catch (e) {
       console.error('Error adding to cart:', e);
       alert('Failed to add product to cart');
@@ -160,7 +166,7 @@ export default function ProductsPage() {
               <p className="text-gray-600">{filteredProducts.length} products found</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading ? (<Loader />) : (<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
                 <div key={product.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden group">
                   <Link href={`/products/${product.id}`}>
@@ -197,7 +203,7 @@ export default function ProductsPage() {
                 </div>
 
               ))}
-            </div>
+            </div>)}
 
             {/* Pagination */}
             <div className="mt-12 flex justify-center">

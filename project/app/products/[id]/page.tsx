@@ -3,6 +3,9 @@
 import axios from "axios";
 import Image from "next/image";
 import { useRouter } from 'next/navigation'
+import Loader from '@/components/loader'
+import { useState } from "react";
+
 interface ProductPageProps {
     params: {
         id: string;
@@ -10,13 +13,15 @@ interface ProductPageProps {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-   
+    const [loading, setLoading] = useState<boolean>(false)
+
     const router = useRouter()
     const res = await fetch(`http://localhost:3334/product/${params.id}`);
     const product = await res.json();
 
 
     const handelCart = async (id: string, price: number) => {
+        setLoading(true)
         try {
             const token = localStorage.getItem('token');
             if (!token) return alert('Please login first');
@@ -39,13 +44,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
         } catch (e) {
             console.error('Error adding to cart:', e);
             alert('Failed to add product to cart');
+        } finally {
+            setLoading(false)
         }
     };
 
 
     return (
         <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden md:flex">
+            {loading ? <Loader /> : <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden md:flex">
                 <div className="md:w-1/2">
                     <Image
                         src={product.image}
@@ -76,7 +83,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>}
         </div>
     );
 }

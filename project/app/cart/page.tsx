@@ -6,10 +6,12 @@ import axios from 'axios';
 import { useCartStore } from '../store/useCartStore';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation'
+import Loader from '@/components/loader'
 
 export default function CartPage() {
   const router = useRouter()
   const { addItem, resetCart } = useCartStore.getState();
+  const [loading, setLoading] = useState<boolean>(true)
   interface CartItem {
     id: string;
     name: string;
@@ -31,6 +33,7 @@ export default function CartPage() {
   }, [])
 
   const fetchCartItem = async () => {
+    setLoading(true)
     try {
       const response = await axios.get('http://localhost:3334/cart/getCart', {
         headers: {
@@ -54,6 +57,9 @@ export default function CartPage() {
     } catch (error) {
       return error
     }
+    finally {
+      setLoading(false)
+    }
   }
 
 
@@ -64,24 +70,24 @@ export default function CartPage() {
       setCartItems(cartItems.map(item =>
         item.id === id ? { ...item, quantity: newQuantity } : item
       ));
-      try {
-        const response = await axios.put(`http://localhost:3334/cart/${id}`,
-          {
-            quantity: newQuantity
-          },
-          {
-            headers: {
-              'authorization': localStorage.getItem('token')
-            },
-          }
+      // try {
+      //   const response = await axios.put(`http://localhost:3334/cart/${id}`,
+      //     {
+      //       quantity: newQuantity
+      //     },
+      //     {
+      //       headers: {
+      //         'authorization': localStorage.getItem('token')
+      //       },
+      //     }
 
-        )
-        if (response) {
-          console.log(response)
-        }
-      } catch (e) {
-        return e
-      }
+      //   )
+      //   if (response) {
+      //     console.log(response)
+      //   }
+      // } catch (e) {
+      //   return e
+      // }
 
     }
   };
@@ -104,13 +110,16 @@ export default function CartPage() {
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = 10.00;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  const shipping = 0;
+  const total = subtotal + shipping;
+
+if(loading){return(<Loader/>)}
+
 
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
+        
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center py-16">
             <svg className="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,7 +143,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
-
+       
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2">
@@ -215,10 +224,7 @@ export default function CartPage() {
                   <span className="text-gray-600">Shipping</span>
                   <span className="text-gray-900">${shipping.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tax</span>
-                  <span className="text-gray-900">${tax.toFixed(2)}</span>
-                </div>
+               
                 <div className="border-t pt-3">
                   <div className="flex justify-between">
                     <span className="text-lg font-semibold text-gray-900">Total</span>

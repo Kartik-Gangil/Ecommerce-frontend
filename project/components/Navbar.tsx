@@ -1,25 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import axios from 'axios';
-import { useCartStore } from '@/app/store/useCartStore';
+
 import { UserCircle } from 'lucide-react';
+import { useAuth } from '@/app/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
-  const { items } = useCartStore()
+const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState<number>();
-  const [token, setToken] = useState<string | null>(null)
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    setToken(storedToken);
-  });
+
+  const { token, logout } = useAuth();
 
 
-  useEffect(() => {
-    setCartCount(items.length)
-  }, [items])
+
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+    router.replace('/login')
+  };
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -65,11 +65,6 @@ export default function Navbar() {
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m4.5-5a2 2 0 104 0 2 2 0 00-4 0zm-6 0a2 2 0 104 0 2 2 0 00-4 0z" />
               </svg>
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
             </Link>
 
             {/* User Menu */}
@@ -85,10 +80,7 @@ export default function Navbar() {
                 <ul className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <li>
                     <button
-                      onClick={() => {
-                        localStorage.removeItem('token');
-                        setToken(null);
-                      }}
+                      onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-red-600"
                     >
                       Logout
@@ -122,11 +114,7 @@ export default function Navbar() {
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m4.5-5a2 2 0 104 0 2 2 0 00-4 0zm-6 0a2 2 0 104 0 2 2 0 00-4 0z" />
               </svg>
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
+
             </Link>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -163,15 +151,24 @@ export default function Navbar() {
             </Link>
             <div className="border-t pt-4">
               {token ? (
-                <button
-                  onClick={() => {
-                    localStorage.removeItem('token');
-                    setToken(null);
-                  }}
-                  className="text-gray-700 hover:text-red-600 block px-3 py-2 rounded-md text-base font-medium"
-                >
-                  Logout
-                </button>
+                <ul>
+                  <li>
+                    <button
+                      onClick={handleLogout}
+                      className="text-gray-700 hover:text-red-600 block px-3 py-2 rounded-md text-base font-medium"
+                    >
+                      Logout
+                    </button>
+                  </li>
+                  <li>
+                    <Link
+                      href="/orderHistroy"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      Orders
+                    </Link>
+                  </li>
+                </ul>
               ) : (
                 <Link
                   href="/login"
